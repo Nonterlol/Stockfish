@@ -889,6 +889,12 @@ Value Search::Worker::search(
     if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 166)
         depth--;
 
+    // New: Static-gap quiet reduction (only depth >= 3, non-PV)
+    // If static eval is far below alpha, reduce quiet moves a bit more.
+    // Conservative and rare.
+    if (!PvNode && !ss->inCheck && depth >= 3 && ss->staticEval < alpha - 150)
+        depth -= 1;
+
     // Step 6. At non-PV nodes we check for an early TT cutoff. Note that we
     //         always check the validity of the TT value because of access races.
     if (!PvNode && !excludedMove && is_valid(ttData.value)
